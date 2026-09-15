@@ -1,0 +1,41 @@
+# ---------------------------------------------------------------------------
+# Central configuration for the whole DVC pipeline.
+# Every stage in dvc.yaml reads its parameters from here via `dvc.api` /
+# argparse, so changing a value here and running `dvc repro` will only
+# re-run the stages whose params actually changed.
+# ---------------------------------------------------------------------------
+
+data:
+  raw_images_dir: data/raw/images
+  raw_annotations: data/raw/annotations/instances.json   # COCO-format json
+  processed_dir: data/processed
+  train_split: 0.85          # fraction of images used for training
+  seed: 42
+
+train:
+  num_classes: 2              # background (0) + N object classes; adjust for your dataset
+  backbone: resnet50_fpn      # torchvision fasterrcnn backbone
+  pretrained_backbone: true
+  batch_size: 4
+  epochs: 10
+  learning_rate: 0.005
+  momentum: 0.9
+  weight_decay: 0.0005
+  lr_step_size: 4             # StepLR: decay every N epochs
+  lr_gamma: 0.1
+  num_workers: 2
+  device: cuda                # falls back to cpu automatically if unavailable
+  checkpoint_every: 1         # save a checkpoint every N epochs
+  log_every_n_steps: 10       # TensorBoard scalar logging frequency
+
+evaluate:
+  score_threshold: 0.5        # confidence threshold when computing eval metrics
+  iou_threshold: 0.5
+
+paths:
+  model_out: models/fasterrcnn_model.pth
+  best_model_out: models/fasterrcnn_best.pth
+  tensorboard_log_dir: logs/tensorboard
+  train_metrics: metrics/train_metrics.json
+  eval_metrics: metrics/eval_metrics.json
+  label_map: models/label_map.json

@@ -1,0 +1,45 @@
+stages:
+
+  prepare:
+    cmd: python src/prepare_data.py --config params.yaml
+    deps:
+      - src/prepare_data.py
+      - data/raw/images
+      - data/raw/annotations/instances.json
+    params:
+      - data
+    outs:
+      - data/processed
+
+  train:
+    cmd: python src/train.py --config params.yaml
+    deps:
+      - src/train.py
+      - src/dataset.py
+      - src/model.py
+      - data/processed
+    params:
+      - train
+    outs:
+      - models/fasterrcnn_model.pth
+      - models/label_map.json
+    metrics:
+      - metrics/train_metrics.json:
+          cache: false
+    plots:
+      - logs/tensorboard:
+          cache: false
+
+  evaluate:
+    cmd: python src/evaluate.py --config params.yaml
+    deps:
+      - src/evaluate.py
+      - src/dataset.py
+      - src/model.py
+      - models/fasterrcnn_model.pth
+      - data/processed
+    params:
+      - evaluate
+    metrics:
+      - metrics/eval_metrics.json:
+          cache: false

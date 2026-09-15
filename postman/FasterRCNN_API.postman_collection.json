@@ -1,0 +1,98 @@
+{
+  "info": {
+    "name": "Faster R-CNN Object Detection API",
+    "description": "Endpoints for the FastAPI service in app/main.py. Import this collection into Postman, set the `base_url` variable, then run 'Health check' and 'Predict' in order.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        },
+        "description": "Confirms the API is up, which device (cpu/cuda) it is running on, and whether the trained model weights were successfully loaded."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Model loaded', function () { pm.expect(pm.response.json().model_loaded).to.eql(true); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Predict (upload image)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/predict?score_threshold=0.5",
+          "host": ["{{base_url}}"],
+          "path": ["predict"],
+          "query": [
+            { "key": "score_threshold", "value": "0.5", "description": "Minimum confidence to include a detection" }
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": [],
+              "description": "Select a local .jpg/.png image to run detection on"
+            }
+          ]
+        },
+        "description": "Runs the trained Faster R-CNN model on an uploaded image and returns bounding boxes, class labels, and confidence scores."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Has detections array', function () { pm.expect(pm.response.json()).to.have.property('detections'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Predict (high threshold, fewer boxes)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/predict?score_threshold=0.8",
+          "host": ["{{base_url}}"],
+          "path": ["predict"],
+          "query": [
+            { "key": "score_threshold", "value": "0.8" }
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "file", "type": "file", "src": [] }
+          ]
+        },
+        "description": "Same endpoint with a stricter confidence threshold, useful for comparing precision/recall trade-offs manually."
+      }
+    }
+  ]
+}

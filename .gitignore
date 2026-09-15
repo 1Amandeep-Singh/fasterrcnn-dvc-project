@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# DVC-tracked data & artifacts (DVC manages these via .dvc files instead)
+/data/raw/images
+/data/raw/annotations/instances.json
+/data/processed
+/models
+/logs/tensorboard
+/metrics
+
+.DS_Store
